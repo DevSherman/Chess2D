@@ -7,15 +7,15 @@ void UCBoxUI::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-void UCBoxUI::Set(UChessComponent& _ChessComponent, FCCoord _CCoord, FLinearColor _Color, FLinearColor _SelectionColor)
+void UCBoxUI::Set(UChessComponent& _ChessComponent, FCoord _Coord, FLinearColor _Color, FLinearColor _SelectionColor)
 {
 	ChessComponent = &_ChessComponent;
-	CCoord = _CCoord;
+	Coord = _Coord;
 	DefaultColor = _Color;
 	SelectionColor = _SelectionColor;
 	BackgroundImage->Brush.TintColor = DefaultColor;
 
-	UE_LOG(LogTemp, Warning, TEXT("[UCBoxUI] %s Created."), *CCoord.Name);
+	UE_LOG(LogTemp, Warning, TEXT("[UCBoxUI] %s Created."), *Coord.GetName());
 }
 
 void UCBoxUI::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -32,15 +32,12 @@ void UCBoxUI::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 
 void UCBoxUI::SetPieceTexture(UTexture2D* Image)
 {
-	if (Image)
-	{
-		PieceImage->SetBrushFromTexture(Image);
-		PieceImage->SetColorAndOpacity(FLinearColor(1, 1, 1, 1));
-	}
-	else
-	{
-		PieceImage->SetBrushFromSoftTexture(nullptr);
-		PieceImage->SetColorAndOpacity(FLinearColor(1, 1, 1, 0));
-	}
+	PieceImage->SetBrushFromTexture(Image);
+	PieceImage->SetOpacity(1);
+}
 
+void UCBoxUI::Clear()
+{
+	PieceImage->SetBrushFromSoftTexture(nullptr);
+	PieceImage->SetOpacity(0);
 }

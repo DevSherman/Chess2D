@@ -1,20 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Chess2D.h"
 #include <Runtime/Engine/Public/EngineUtils.h>
 
 namespace Utls
 {
-	static FString GetCBoxName(int X, int Y)
-	{
-		FString Name = "";
-		Name += COLUMN[X];
-		Name += ROW[Y];
-		//UE_LOG(LogTemp, Warning, TEXT("Name: %d,%d %s"), X + 1, Y + 1, *Name);
-		return Name;
-	}
-
 	template <typename T>
 	static UClass* LoadBlueprintFromPath(const FString Path)
 	{

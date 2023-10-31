@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "../Chess2D.h"
+#include "../Core/ChessTypes.h"
 #include "CBoxUI.generated.h"
 
 
@@ -12,9 +12,10 @@ class CHESS2D_API UCBoxUI : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void Set(class UChessComponent& ChessComponent, FCCoord _Coord, FLinearColor Color, FLinearColor SelectionColor);
-	inline FCCoord GetCoord() { return CCoord; }
+	void Set(class UChessComponent& ChessComponent, FCoord _Coord, FLinearColor Color, FLinearColor SelectionColor);
+	inline FCoord GetCoord() { return Coord; }
 	void SetPieceTexture(class UTexture2D* Texture);
+	void Clear();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -29,5 +30,5 @@ private:
 	FLinearColor DefaultColor;
 	FLinearColor SelectionColor;
 
-	FCCoord CCoord;
+	FCoord Coord;
 };

@@ -4,10 +4,35 @@
 #include "Chess2D/Utls.h"
 #include "CBoxUI.h"
 #include "Components/WrapBox.h"
+#include "Components/Image.h"
+#include "Components/CanvasPanelSlot.h"
+#include <Blueprint/WidgetLayoutLibrary.h>
 
 void UChessBoardUI::NativeConstruct()
 {
 	Super::NativeConstruct();
+	CursorSlot = Cast<UCanvasPanelSlot>(CursorImage->Slot);
+	CursorImage->SetVisibility(ESlateVisibility::HitTestInvisible);
+	ClearCursor();
+}
+
+FReply UChessBoardUI::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("[UChessBoardUI] NOnMouseMove"));
+	CursorSlot->SetPosition(UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld()));
+	return FReply::Handled();
+}
+
+FReply UChessBoardUI::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	ChessComponent->OnClickPressed();
+	return FReply::Handled();
+}
+
+FReply UChessBoardUI::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	ChessComponent->OnClickReleased();
+	return FReply::Handled();
 }
 
 void UChessBoardUI::Init(UChessComponent& _ChessComponent)
@@ -22,12 +47,12 @@ void UChessBoardUI::Init(UChessComponent& _ChessComponent)
 			int _y = 7 - y;
 
 			UCBoxUI* CBoxUI = CreateWidget<UCBoxUI>(GetWorld(), W_CBoxUI);
-			FCCoord CCoord{ x, _y, Utls::GetCBoxName(x, _y) };
+			FCoord Coord{ x, _y};
 
 			CBoxUI->Set
 			(
 				_ChessComponent,
-				CCoord,
+				Coord,
 				(x + _y) % 2 == 0 ? WHITE_COLOR : BLACK_COLOR,
 				SELECTION_COLOR
 			);
@@ -35,41 +60,20 @@ void UChessBoardUI::Init(UChessComponent& _ChessComponent)
 			ChessBoardBox->AddChild(CBoxUI);
 		}
 	}
+}
 
-	//X = COLUMN / Y = ROW
-	ChessComponent->SpawnPiece(EPieceType::WHITE_ROOK, EColor::WHITE, 0, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_KNIGHT, EColor::WHITE, 1, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_BISHOP, EColor::WHITE, 2, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_QUEEN, EColor::WHITE, 3, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_KING, EColor::WHITE, 4, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_BISHOP, EColor::WHITE, 5, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_KNIGHT, EColor::WHITE, 6, 0 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_ROOK, EColor::WHITE, 7, 0 );
-	
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 0, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 1, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 2, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 3, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 4, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 5, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 6, 1 );
-	ChessComponent->SpawnPiece(EPieceType::WHITE_PAWN, EColor::WHITE, 7, 1 );
-	
-	ChessComponent->SpawnPiece(EPieceType::BLACK_ROOK, EColor::BLACK, 0, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_KNIGHT, EColor::BLACK, 1, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_BISHOP, EColor::BLACK, 2, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_QUEEN, EColor::BLACK, 3, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_KING, EColor::BLACK, 4, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_BISHOP, EColor::BLACK, 5, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_KNIGHT, EColor::BLACK, 6, 7 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_ROOK, EColor::BLACK, 7, 7 );
-	
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 0, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 1, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 2, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 3, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 4, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 5, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 6, 6 );
-	ChessComponent->SpawnPiece(EPieceType::BLACK_PAWN, EColor::BLACK, 7, 6 );
+void UChessBoardUI::SetCursorImage(UTexture2D* Texture)
+{
+	CursorImage->SetBrushFromTexture(Texture);
+	CursorImage->SetOpacity(1);
+}
+
+UTexture2D* UChessBoardUI::GetImageFromCursor()
+{
+	return Cast<UTexture2D>(CursorImage->Brush.GetResourceObject());
+}
+
+void UChessBoardUI::ClearCursor()
+{
+	CursorImage->SetOpacity(0);
 }

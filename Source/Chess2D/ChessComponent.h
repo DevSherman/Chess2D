@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
-#include "Chess2D.h"
+#include "Core/ChessTypes.h"
 #include "ChessComponent.generated.h"
 
 
@@ -17,17 +17,25 @@ public:
 	void RegistryCBoxUI(class UCBoxUI& CBoxUI);
 	void SetCurrentCBoxUI(class UCBoxUI& CBoxUI);
 	inline void ClearCurrentCBoxUI() { CurrentCBoxUI = nullptr; }
-	void SpawnPiece(EPieceType PieceType, EColor PieceColor, int X, int Y);
-	void UpdateCBoxData(EPieceType PieceType, EColor PieceColor, int X, int Y);
+	void SpawnPiece(EPieceType PieceType, EPieceColor PieceColor, int X, int Y);
+	void UpdateBoard(ChessBoxData* Data);
 
+	void OnClickPressed();
+	void OnClickReleased();
+
+private:
+	UTexture2D* GetPieceTexture(EPieceType PieceType, EPieceColor PieceColor);
+	void MoveToCursor();
 
 protected:
 	UPROPERTY(EditAnywhere) TSubclassOf<class UChessBoardUI> W_ChessBoardUI;
-	UPROPERTY(EditAnywhere) TArray<UTexture2D*> Pieces_Textures;
+	UPROPERTY(EditAnywhere) TArray<UTexture2D*> TexturesPieces;
 
 private:
-	class UChessBoardUI* ChessBoardUI;
+	class UChessBoardUI* UI;
 	class UCBoxUI* CBoxUIArray[8][8];
 	class UCBoxUI* CurrentCBoxUI = nullptr;
-	CBoxData* CBData[8][8];
+	struct ChessBoxData* CurrentData = nullptr;
+
+	class UChessEngine* Engine;
 };
