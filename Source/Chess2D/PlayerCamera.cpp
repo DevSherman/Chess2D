@@ -31,9 +31,9 @@ void APlayerCamera::BeginPlay()
 	Controller->CurrentMouseCursor = EMouseCursor::GrabHand;
 }
 
-void APlayerCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+/*void APlayerCamera::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
+}*/
 

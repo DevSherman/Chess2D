@@ -8,8 +8,8 @@ namespace ChessUtls
 	static FString GetStringData(ChessBoxData* Data)
 	{
 		FString Name;
-		if (Data->PieceColor == EPieceColor::WHITE) Name = "WHITE";
-		if (Data->PieceColor == EPieceColor::BLACK) Name = "BLACK";
+		if (Data->Team == ETeam::WHITE) Name = "WHITE";
+		if (Data->Team == ETeam::BLACK) Name = "BLACK";
 
 		if (Data->PieceType == EPieceType::BISHOP) Name += "_BISHOP";
 		if (Data->PieceType == EPieceType::KING) Name += "_KING";
@@ -18,6 +18,13 @@ namespace ChessUtls
 		if (Data->PieceType == EPieceType::QUEEN) Name += "_QUEEN";
 		if (Data->PieceType == EPieceType::ROOK) Name += "_ROOK";
 
+		return Name;
+	}
+	static FString GetCoordName(FCoord Coord)
+	{
+		FString Name;
+		Name.AppendChar(COLUMN[Coord.X]);
+		Name.AppendChar(ROW[Coord.Y]);
 		return Name;
 	}
 }

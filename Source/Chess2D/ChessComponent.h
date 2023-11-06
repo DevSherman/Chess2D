@@ -17,19 +17,23 @@ public:
 	void RegistryCBoxUI(class UCBoxUI& CBoxUI);
 	void SetCurrentCBoxUI(class UCBoxUI& CBoxUI);
 	inline void ClearCurrentCBoxUI() { CurrentCBoxUI = nullptr; }
-	void SpawnPiece(EPieceType PieceType, EPieceColor PieceColor, int X, int Y);
+	void SpawnPiece(EPieceType PieceType, ETeam PieceColor, int X, int Y);
 	void UpdateBoard(ChessBoxData* Data);
-
+	void ShowInfoPositions(TArray<EMovement> MovesArray);
+	void ClearInfoPositions();
 	void OnClickPressed();
 	void OnClickReleased();
 
 private:
-	UTexture2D* GetPieceTexture(EPieceType PieceType, EPieceColor PieceColor);
+	UTexture2D* GetPieceTexture(EPieceType PieceType, ETeam PieceColor);
 	void MoveToCursor();
+	void NextTeamTurn();
+	void ResetPos();
+	void Castling(FCoord Coord);
 
 protected:
 	UPROPERTY(EditAnywhere) TSubclassOf<class UChessBoardUI> W_ChessBoardUI;
-	UPROPERTY(EditAnywhere) TArray<UTexture2D*> TexturesPieces;
+	UPROPERTY(EditAnywhere) TArray<class UTexture2D*> PiecesTexture;
 
 private:
 	class UChessBoardUI* UI;
@@ -38,4 +42,7 @@ private:
 	struct ChessBoxData* CurrentData = nullptr;
 
 	class UChessEngine* Engine;
+	TArray<EMovement> ValidMovements;
+	ETeam CurrentTeam = ETeam::WHITE;
+
 };

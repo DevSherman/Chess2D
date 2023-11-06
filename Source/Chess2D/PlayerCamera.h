@@ -16,7 +16,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
 	UPROPERTY(EditAnywhere) class UCameraComponent* Camera;

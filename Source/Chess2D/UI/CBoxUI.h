@@ -14,6 +14,7 @@ class CHESS2D_API UCBoxUI : public UUserWidget
 public:
 	void Set(class UChessComponent& ChessComponent, FCoord _Coord, FLinearColor Color, FLinearColor SelectionColor);
 	inline FCoord GetCoord() { return Coord; }
+	void ShowSelection(bool bValue);
 	void SetPieceTexture(class UTexture2D* Texture);
 	void Clear();
 
@@ -22,8 +23,8 @@ protected:
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* BackgroundImage;
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* PieceImage;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* BackgroundImage; //-1
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* PieceImage; //0
 
 private:
 	class UChessComponent* ChessComponent;

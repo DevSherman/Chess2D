@@ -14,9 +14,13 @@ class CHESS2D_API UChessEngine : public UObject
 public:
 	UChessEngine();
 
-	void UpdateBoard(ChessBoxData* Data);
-	ChessBoxData& GetData(FCoord Coord);
+	void UpdateBoard(ChessBoxData* Data, bool bInit = false);
+	void ClearBoard(FCoord Coord);
+	ChessBoxData* GetData(FCoord Coord);
+	TArray<EMovement> GetMovements(ChessBoxData& Data);
+	int IsValidMovement(FCoord Coord);
 
 private:
 	ChessBoxData* Board[8][8];
+	class UValidation* Validation;
 };
