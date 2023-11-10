@@ -19,7 +19,7 @@ public:
 	inline void ClearCurrentCBoxUI() { CurrentCBoxUI = nullptr; }
 	void SpawnPiece(EPieceType PieceType, ETeam PieceColor, int X, int Y);
 	void UpdateBoard(ChessBoxData* Data);
-	void ShowInfoPositions(TArray<EMovement> MovesArray);
+	void ShowInfoPositions(TArray<FMovement> MovesArray);
 	void ClearInfoPositions();
 	void OnClickPressed();
 	void OnClickReleased();
@@ -42,7 +42,7 @@ private:
 	struct ChessBoxData* CurrentData = nullptr;
 
 	class UChessEngine* Engine;
-	TArray<EMovement> ValidMovements;
+	TArray<FMovement> ValidMovements;
 	ETeam CurrentTeam = ETeam::WHITE;
 
 };

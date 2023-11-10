@@ -85,15 +85,24 @@ void UChessComponent::UpdateBoard(ChessBoxData* Data)
 	Engine->UpdateBoard(Data);
 }
 
-void UChessComponent::ShowInfoPositions(TArray<EMovement> MovesArray)
+void UChessComponent::ShowInfoPositions(TArray<FMovement> MovesArray)
 {
 	for (int i = 0; i < ValidMovements.Num(); i++)
-		CBoxUIArray[ValidMovements[i].Coord.X][ValidMovements[i].Coord.Y]->ShowSelection(true);
+	{
+		EInfoType InfoType;
+		if (ValidMovements[i].Type == EMovementType::CAPTURE || ValidMovements[i].Type == EMovementType::PASSANT)
+			InfoType = EInfoType::CAPTURE_TYPE;
+		if (ValidMovements[i].Type == EMovementType::MOVE || ValidMovements[i].Type == EMovementType::CASTLING)
+			InfoType = EInfoType::MOVE_TYPE;
+
+		CBoxUIArray[ValidMovements[i].Coord.X][ValidMovements[i].Coord.Y]->SetFrameInfo(InfoType);
+	}
+		
 }
 void UChessComponent::ClearInfoPositions()
 {
 	for (int i = 0; i < ValidMovements.Num(); i++)
-		CBoxUIArray[ValidMovements[i].Coord.X][ValidMovements[i].Coord.Y]->ShowSelection(false);
+		CBoxUIArray[ValidMovements[i].Coord.X][ValidMovements[i].Coord.Y]->SetFrameInfo(EInfoType::CLEAR_TYPE);
 	ValidMovements.Empty();
 }
 
@@ -132,21 +141,21 @@ void UChessComponent::OnClickReleased()
 			int Index = Engine->IsValidMovement(CurrentCBoxUI->GetCoord());
 			if (Index > -1)
 			{
-				EMovement Move = ValidMovements[Index];
+				FMovement Move = ValidMovements[Index];
 
 				switch (Move.Type)
 				{
-					case MovementType::MOVE:
+					case EMovementType::MOVE:
 					{
 
 						break;
 					}
-					case MovementType::CAPTURE:
+					case EMovementType::CAPTURE:
 					{
 
 						break;
 					}
-					case MovementType::CASTLING:
+					case EMovementType::CASTLING:
 					{
 						Castling(Move.Coord);
 						break;
@@ -177,7 +186,7 @@ void UChessComponent::NextTeamTurn()
 void UChessComponent::ResetPos()
 {
 	CBoxUIArray[CurrentData->Coord.X][CurrentData->Coord.Y]->SetPieceTexture(UI->GetImageFromCursor());
-	Engine->UpdateBoard(CurrentData);
+	Engine->UpdateBoard(CurrentData, true);
 }
 
 void UChessComponent::Castling(FCoord Coord)

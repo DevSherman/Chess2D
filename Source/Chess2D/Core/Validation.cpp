@@ -6,7 +6,7 @@ void UValidation::Init(UChessEngine& _Engine)
 	Engine = &_Engine;
 }
 
-TArray<EMovement> UValidation::GetMovements(ChessBoxData& Data)
+TArray<FMovement> UValidation::GetMovements(ChessBoxData& Data)
 {
 	CurrentData = &Data;
 	CurrentTeam = CurrentData->Team;
@@ -42,6 +42,12 @@ int UValidation::IsValidMovement(FCoord Coord)
 	return -1;
 }
 
+void UValidation::UpdateKingPos(ETeam Team, FCoord Pos)
+{
+	if (Team == ETeam::WHITE) W_KING_POS = Pos;
+	else if (Team == ETeam::BLACK) B_KING_POS = Pos;
+}
+
 void UValidation::CheckMoves()
 {
 	for (int i = 0; i < PossibleMoves.Num(); i++)
@@ -50,9 +56,9 @@ void UValidation::CheckMoves()
 		if (MoveData)
 		{
 			if (MoveData->PieceType == EPieceType::EMPTY) 
-				Result.Add({MovementType::MOVE, PossibleMoves[i], CurrentTeam });
+				Result.Add({ EMovementType::MOVE, PossibleMoves[i], CurrentTeam });
 			else if(MoveData->Team != CurrentData->Team)
-				Result.Add({ MovementType::CAPTURE, PossibleMoves[i], CurrentTeam });
+				Result.Add({ EMovementType::CAPTURE, PossibleMoves[i], CurrentTeam });
 		}
 	}
 }
@@ -99,7 +105,7 @@ void UValidation::GetKingMovements()
 					&& GetData({ 2, 0 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 3, 0 })->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ MovementType::CASTLING, {2, 0}, CurrentTeam });
+					Result.Add({ EMovementType::CASTLING, {2, 0}, CurrentTeam });
 				}
 			}
 			ChessBoxData* RIGHT_ROOK = GetData({ 7, 0 });
@@ -108,7 +114,7 @@ void UValidation::GetKingMovements()
 				if (GetData({ 5, 0 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 6, 0 })->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ MovementType::CASTLING, {6, 0}, CurrentTeam });
+					Result.Add({ EMovementType::CASTLING, {6, 0}, CurrentTeam });
 				}
 			}
 		}
@@ -126,7 +132,7 @@ void UValidation::GetKingMovements()
 					&& GetData({ 2, 7 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 3, 7})->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ MovementType::CASTLING, {2, 7}, CurrentTeam });
+					Result.Add({ EMovementType::CASTLING, {2, 7}, CurrentTeam });
 				}
 			}
 			ChessBoxData* RIGHT_ROOK = GetData({ 7, 7 });
@@ -135,7 +141,7 @@ void UValidation::GetKingMovements()
 				if (GetData({ 5, 7 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 6, 7 })->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ MovementType::CASTLING, {6, 7}, CurrentTeam });
+					Result.Add({ EMovementType::CASTLING, {6, 7}, CurrentTeam });
 				}
 			}
 		}
@@ -177,116 +183,116 @@ void UValidation::GetPawnMovements()
 		RightCapture = GetData({ X + 1, Y - 1 });
 	}
 
-	if(Forward1 && Forward1->Team == ETeam::NONE) Result.Add({ MovementType::MOVE, Forward1->Coord, Forward1->Team });
-	if (Forward2 && Forward2->Team == ETeam::NONE) Result.Add({ MovementType::MOVE, Forward2->Coord, Forward2->Team });
-	if (LeftCapture && LeftCapture->Team != CurrentTeam && LeftCapture->Team != ETeam::NONE) Result.Add({ MovementType::CAPTURE, LeftCapture->Coord, CurrentTeam });
-	if (RightCapture && RightCapture->Team != CurrentTeam && RightCapture->Team != ETeam::NONE) Result.Add({ MovementType::CAPTURE, RightCapture->Coord, CurrentTeam });
+	if(Forward1 && Forward1->Team == ETeam::NONE) Result.Add({ EMovementType::MOVE, Forward1->Coord, Forward1->Team });
+	if (Forward2 && Forward2->Team == ETeam::NONE) Result.Add({ EMovementType::MOVE, Forward2->Coord, Forward2->Team });
+	if (LeftCapture && LeftCapture->Team != CurrentTeam && LeftCapture->Team != ETeam::NONE) Result.Add({ EMovementType::CAPTURE, LeftCapture->Coord, CurrentTeam });
+	if (RightCapture && RightCapture->Team != CurrentTeam && RightCapture->Team != ETeam::NONE) Result.Add({ EMovementType::CAPTURE, RightCapture->Coord, CurrentTeam });
 	//TODO: passant
 	//CheckMoves();
 }
 
 void UValidation::GetAxisMovements()
 {
-	ChessBoxData* Data;
-	int i = 1;
-	while(true) //left
-	{
-		FCoord Coord = { X - i, Y };
-		Data = GetData({ Coord });
-		if (!Data) break;
-
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
-	}
-	i = 1;
-	while (true) //right
-	{
-		FCoord Coord = { X + i, Y };
-		Data = GetData({ Coord });
-		if (!Data) break;
-
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
-	}
-	i = 1;
-	while (true) //up
-	{
-		FCoord Coord = { X, Y + i };
-		Data = GetData({ Coord });
-		if (!Data) break;
-
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
-	}
-	i = 1;
-	while (true) //bottom
-	{
-		FCoord Coord = { X, Y - i };
-		Data = GetData({ Coord });
-		if (!Data) break;
-
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
-	}
+	IterateAxis(1, 0);
+	IterateAxis(0, 1);
+	IterateAxis(1, 1);
+	IterateAxis(-1, -1);
 }
 
 void UValidation::GetDiagonalMovements()
 {
-	ChessBoxData* Data;
-	int i = 1;
-	while(true)
-	{
-		FCoord Coord = { X + i, Y + i };
-		Data = GetData({ Coord });
-		if (!Data) break;
-		
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
-	}
-	i = 1;
+	IterateAxis(1, 1);
+	IterateAxis(1, -1);
+	IterateAxis(-1, 1);
+	IterateAxis(-1, -1);
+}
+
+void UValidation::IterateAxis(int IncrementX, int IncrementY)
+{
+	FCoord Coord = { X + IncrementX, Y + IncrementY };
 	while (true)
 	{
-		FCoord Coord = { X - i, Y - i };
-		Data = GetData({ Coord });
+		ChessBoxData* Data = GetData({ Coord });
 		if (!Data) break;
 
 		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
 		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
 		else break;
-		i++;
-	}
-	i = 1;
-	while (true)
-	{
-		FCoord Coord = { X + i, Y - i };
-		Data = GetData({ Coord });
-		if (!Data) break;
 
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
-	}
-	i = 1;
-	while (true)
-	{
-		FCoord Coord = { X - i, Y + i };
-		Data = GetData({ Coord });
-		if (!Data) break;
-
-		if (Data->Team == ETeam::NONE) PossibleMoves.Add(Coord);
-		else if ((Data->Team != CurrentTeam)) { PossibleMoves.Add(Coord); break; }
-		else break;
-		i++;
+		Coord.X += IncrementX;
+		Coord.Y += IncrementY;
 	}
 }
+
+TArray<FCoord> UValidation::OnCheck(ETeam Team)
+{
+	TArray<FCoord> Coords;
+	ChessBoxData* Data;
+
+	if (Team == ETeam::WHITE)
+	{
+		int i = 1;
+		while (true)
+		{
+			FCoord Coord = { W_KING_POS.X + i, W_KING_POS.Y + i };
+			Data = GetData({ Coord });
+			if (!Data) break;
+
+			if (Data->Team == Team) break;
+			else if (Data->Team != Team && Data->Team != ETeam::NONE)
+			{
+				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+				break;
+			}
+			i++;
+		}
+		i = 1;
+		while (true)
+		{
+			FCoord Coord = { W_KING_POS.X - i, W_KING_POS.Y - i };
+			Data = GetData({ Coord });
+			if (!Data) break;
+
+			if (Data->Team == Team) break;
+			else if (Data->Team != Team && Data->Team != ETeam::NONE)
+			{
+				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+				break;
+			}
+			i++;
+		}
+		i = 1;
+		while (true)
+		{
+			FCoord Coord = { W_KING_POS.X + i, W_KING_POS.Y - i };
+			Data = GetData({ Coord });
+			if (!Data) break;
+
+			if (Data->Team == Team) break;
+			else if (Data->Team != Team)
+			{
+				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+				break;
+			}
+			i++;
+		}
+		i = 1;
+		while (true)
+		{
+			FCoord Coord = { W_KING_POS.X - i, W_KING_POS.Y + i };
+			Data = GetData({ Coord });
+			if (!Data) break;
+
+			if (Data->Team == CurrentTeam) break;
+			else if ((Data->Team != CurrentTeam))
+			{
+				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+				break;
+			}
+			i++;
+		}
+	}
+
+	return Coords;
+}
+

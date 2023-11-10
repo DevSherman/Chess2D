@@ -48,3 +48,23 @@ void UCBoxUI::Clear()
 	PieceImage->SetOpacity(0);
 }
 
+void UCBoxUI::SetFrameInfo(EInfoType Type)
+{
+	switch (Type)
+	{
+		case CLEAR_TYPE: default: FrameImage->SetOpacity(0); break;
+		case MOVE_TYPE:
+		{
+			FrameImage->SetBrushTintColor(FSlateColor(FLinearColor::Black)); 
+			FrameImage->SetOpacity(0.5f);
+			break;
+		}
+		case CAPTURE_TYPE:
+		{
+			FrameImage->SetBrushTintColor(FSlateColor(FLinearColor::Red));
+			FrameImage->SetOpacity(0.5f);
+			break;
+		}
+	}
+}
+

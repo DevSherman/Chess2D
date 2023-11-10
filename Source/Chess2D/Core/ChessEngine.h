@@ -17,7 +17,7 @@ public:
 	void UpdateBoard(ChessBoxData* Data, bool bInit = false);
 	void ClearBoard(FCoord Coord);
 	ChessBoxData* GetData(FCoord Coord);
-	TArray<EMovement> GetMovements(ChessBoxData& Data);
+	TArray<FMovement> GetMovements(ChessBoxData& Data);
 	int IsValidMovement(FCoord Coord);
 
 private:

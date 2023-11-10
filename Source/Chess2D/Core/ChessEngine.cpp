@@ -18,7 +18,7 @@ void UChessEngine::UpdateBoard(ChessBoxData* Data, bool bInit)
 	if(!bInit) Data->bMoved = true;
 	Board[Data->Coord.X][Data->Coord.Y] = Data;
 
-	//if (Data->PieceType == EPieceType::KING) Validation->UpdateKingPos(Data->Team, Data->Coord);
+	if (Data->PieceType == EPieceType::KING) Validation->UpdateKingPos(Data->Team, Data->Coord);
 
 	UE_LOG
 	(
@@ -39,7 +39,7 @@ ChessBoxData* UChessEngine::GetData(FCoord Coord)
 	return Board[Coord.X][Coord.Y];
 }
 
-TArray<EMovement> UChessEngine::GetMovements(ChessBoxData& Data)
+TArray<FMovement> UChessEngine::GetMovements(ChessBoxData& Data)
 {
 	return Validation->GetMovements(Data);
 }

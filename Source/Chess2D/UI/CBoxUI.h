@@ -18,6 +18,8 @@ public:
 	void SetPieceTexture(class UTexture2D* Texture);
 	void Clear();
 
+	void SetFrameInfo(EInfoType Type);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -25,6 +27,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* BackgroundImage; //-1
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* PieceImage; //0
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget)) class UImage* FrameImage; //0
 
 private:
 	class UChessComponent* ChessComponent;
