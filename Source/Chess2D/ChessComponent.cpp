@@ -5,6 +5,8 @@
 #include "Core/ChessTypes.h"
 #include "Utls.h"
 #include "Core/Utls.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 UChessComponent::UChessComponent()
 {
@@ -14,13 +16,12 @@ UChessComponent::UChessComponent()
 
 void UChessComponent::CreateBoard()
 {
-	PiecesTexture = Utls::LoadTexturesFromPath("/Game/Textures/Pieces/");
+	PiecesTexture = Utls::LoadAssetsFromPath<UTexture2D>("/Game/Textures/Pieces/");
+	SoundEffects = Utls::LoadAssetsFromPath<USoundBase>("/Game/Sounds/Effects/");
 
 	W_ChessBoardUI = Utls::LoadBlueprintFromPath<UChessBoardUI>("'/Game/Widgets/W_ChessBoardUI.W_ChessBoardUI'");
 	UI = CreateWidget<UChessBoardUI>(GetWorld(), W_ChessBoardUI);
 	if (!UI) { UE_LOG(LogTemp, Error, TEXT("[UChessComponent: %s] UI not initilizaed.")); return; }
-
-
 
 	UI->AddToViewport();
 	UI->Init(*this);
@@ -64,6 +65,8 @@ void UChessComponent::CreateBoard()
 	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 7, 6);
 
 	UE_LOG(LogTemp, Warning, TEXT("[UChessComponent] Pieces placed."));
+
+	PlaySoundEffect(0); //start game
 }
 
 void UChessComponent::RegistryCBoxUI(UCBoxUI& CBoxUI)
@@ -143,20 +146,25 @@ void UChessComponent::OnClickReleased()
 			{
 				FMovement Move = ValidMovements[Index];
 
+				//TOOD: Check move type
 				switch (Move.Type)
 				{
 					case EMovementType::MOVE:
 					{
-
+						if(CurrentData->Team == WHITE) PlaySoundEffect(1);
+						if (CurrentData->Team == BLACK) PlaySoundEffect(2);
 						break;
 					}
 					case EMovementType::CAPTURE:
 					{
-
+						if (CurrentData->Team == WHITE) PlaySoundEffect(5);
+						if (CurrentData->Team == BLACK) PlaySoundEffect(6);
 						break;
 					}
 					case EMovementType::CASTLING:
 					{
+						if (CurrentData->Team == WHITE) PlaySoundEffect(3);
+						if (CurrentData->Team == BLACK) PlaySoundEffect(4);
 						Castling(Move.Coord);
 						break;
 					}
@@ -234,6 +242,11 @@ void UChessComponent::Castling(FCoord Coord)
 		CBoxUIArray[7][7]->Clear();
 		Engine->ClearBoard({ 7, 7 });
 	}
+}
+
+void UChessComponent::PlaySoundEffect(int Index)
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), SoundEffects[Index]);
 }
 
 void UChessComponent::SpawnPiece(EPieceType PieceType, ETeam PieceColor, int X, int Y)

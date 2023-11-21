@@ -31,9 +31,13 @@ private:
 	void ResetPos();
 	void Castling(FCoord Coord);
 
+	void PlaySoundEffect(int Index);
+
 protected:
 	UPROPERTY(EditAnywhere) TSubclassOf<class UChessBoardUI> W_ChessBoardUI;
 	UPROPERTY(EditAnywhere) TArray<class UTexture2D*> PiecesTexture;
+
+	UPROPERTY(EditAnywhere) TArray<class USoundBase*> SoundEffects;
 
 private:
 	class UChessBoardUI* UI;

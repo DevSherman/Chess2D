@@ -17,16 +17,17 @@ namespace Utls
 		return (UClass*)(blueprint->GeneratedClass);
 	}
 
-	static TArray<UTexture2D*> LoadTexturesFromPath(const FString Path)
+	template <typename T>
+	static TArray<T*> LoadAssetsFromPath(const FString Path)
 	{
 		TArray<UObject*> Assets;
-		TArray<UTexture2D*> Textures;
+		TArray<T*> FinalAssets;
 		EngineUtils::FindOrLoadAssetsByPath(*Path, Assets, EngineUtils::ATL_Regular);
 		for (auto asset : Assets)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("[Asset name: %s]"), *asset->GetName());
-			Textures.Add(Cast<UTexture2D>(asset));
+			FinalAssets.Add(Cast<T>(asset));
 		}
-		return Textures;
+		return FinalAssets;
 	}
 }

@@ -57,7 +57,7 @@ void UValidation::CheckMoves()
 		{
 			if (MoveData->PieceType == EPieceType::EMPTY) 
 				Result.Add({ EMovementType::MOVE, PossibleMoves[i], CurrentTeam });
-			else if(MoveData->Team != CurrentData->Team)
+			else if(MoveData->Team != CurrentTeam)
 				Result.Add({ EMovementType::CAPTURE, PossibleMoves[i], CurrentTeam });
 		}
 	}
@@ -195,8 +195,8 @@ void UValidation::GetAxisMovements()
 {
 	IterateAxis(1, 0);
 	IterateAxis(0, 1);
-	IterateAxis(1, 1);
-	IterateAxis(-1, -1);
+	IterateAxis(-1, 0);
+	IterateAxis(0, -1);
 }
 
 void UValidation::GetDiagonalMovements()
