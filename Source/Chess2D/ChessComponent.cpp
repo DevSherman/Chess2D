@@ -28,45 +28,38 @@ void UChessComponent::CreateBoard()
 
 	UE_LOG(LogTemp, Warning, TEXT("[UChessComponent] Board Created."));
 
-	SpawnPiece(EPieceType::ROOK, ETeam::WHITE, 0, 0);
-	SpawnPiece(EPieceType::KNIGHT, ETeam::WHITE, 1, 0);
-	SpawnPiece(EPieceType::BISHOP, ETeam::WHITE, 2, 0);
-	SpawnPiece(EPieceType::QUEEN, ETeam::WHITE, 3, 0);
-	SpawnPiece(EPieceType::KING, ETeam::WHITE, 4, 0);
-	SpawnPiece(EPieceType::BISHOP, ETeam::WHITE, 5, 0);
-	SpawnPiece(EPieceType::KNIGHT, ETeam::WHITE, 6, 0);
-	SpawnPiece(EPieceType::ROOK, ETeam::WHITE, 7, 0);
-
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 0, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 1, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 2, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 3, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 4, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 5, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 6, 1);
-	SpawnPiece(EPieceType::PAWN, ETeam::WHITE, 7, 1);
-
-	SpawnPiece(EPieceType::ROOK, ETeam::BLACK, 0, 7);
-	SpawnPiece(EPieceType::KNIGHT, ETeam::BLACK, 1, 7);
-	SpawnPiece(EPieceType::BISHOP, ETeam::BLACK, 2, 7);
-	SpawnPiece(EPieceType::QUEEN, ETeam::BLACK, 3, 7);
-	SpawnPiece(EPieceType::KING, ETeam::BLACK, 4, 7);
-	SpawnPiece(EPieceType::BISHOP, ETeam::BLACK, 5, 7);
-	SpawnPiece(EPieceType::KNIGHT, ETeam::BLACK, 6, 7);
-	SpawnPiece(EPieceType::ROOK, ETeam::BLACK, 7, 7);
-
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 0, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 1, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 2, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 3, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 4, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 5, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 6, 6);
-	SpawnPiece(EPieceType::PAWN, ETeam::BLACK, 7, 6);
-
+	LoadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 	UE_LOG(LogTemp, Warning, TEXT("[UChessComponent] Pieces placed."));
 
 	PlaySoundEffect(0); //start game
+}
+
+void UChessComponent::LoadFEN(FString FEN)
+{
+	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+	int row = 7;
+	int column = 0;
+
+	for (int i = 0; i < FEN.Len(); i++)
+	{
+		char c = FEN[i];
+
+		if (isalpha(c))
+		{
+			SpawnPiece(c, column, row);
+			column++;
+		}
+		else if (isalnum(c))
+		{
+			column += (int)c - 1;
+			if(column == 7) row--;
+		}
+		else //-> '/'
+		{
+			row--;
+			column = 0;
+		}
+	}
 }
 
 void UChessComponent::RegistryCBoxUI(UCBoxUI& CBoxUI)
@@ -253,6 +246,23 @@ void UChessComponent::SpawnPiece(EPieceType PieceType, ETeam PieceColor, int X, 
 {
 	Engine->UpdateBoard(new ChessBoxData(PieceType, PieceColor, X, Y), true);
 	CBoxUIArray[X][Y]->SetPieceTexture(GetPieceTexture(PieceType, PieceColor));
+}
+
+void UChessComponent::SpawnPiece(char c, int X, int Y)
+{
+	ETeam Team = isupper(c) ? ETeam::WHITE : ETeam::BLACK;
+	EPieceType Piece = EPieceType::EMPTY;
+
+	switch (c)
+	{
+		case 'r': case 'R': Piece = EPieceType::ROOK; break;
+		case 'n': case 'N': Piece = EPieceType::KNIGHT; break;
+		case 'b': case 'B': Piece = EPieceType::BISHOP; break;
+		case 'q': case 'Q': Piece = EPieceType::QUEEN; break;
+		case 'k': case 'K': Piece = EPieceType::KING; break;
+		case 'p': case 'P': Piece = EPieceType::PAWN; break;
+	}
+	SpawnPiece(Piece, Team, X, Y);
 }
 
 UTexture2D* UChessComponent::GetPieceTexture(EPieceType PieceType, ETeam PieceColor)

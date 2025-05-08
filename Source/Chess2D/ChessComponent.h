@@ -14,10 +14,12 @@ class CHESS2D_API UChessComponent : public USceneComponent
 public:	
 	UChessComponent();
 	void CreateBoard();
+	void LoadFEN(FString FEN);
 	void RegistryCBoxUI(class UCBoxUI& CBoxUI);
 	void SetCurrentCBoxUI(class UCBoxUI& CBoxUI);
 	inline void ClearCurrentCBoxUI() { CurrentCBoxUI = nullptr; }
 	void SpawnPiece(EPieceType PieceType, ETeam PieceColor, int X, int Y);
+	void SpawnPiece(char c, int X, int Y);
 	void UpdateBoard(ChessBoxData* Data);
 	void ShowInfoPositions(TArray<FMovement> MovesArray);
 	void ClearInfoPositions();
