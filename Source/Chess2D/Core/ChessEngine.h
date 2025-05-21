@@ -16,11 +16,15 @@ public:
 
 	void UpdateBoard(ChessBoxData* Data, bool bInit = false);
 	void ClearBoard(FCoord Coord);
-	ChessBoxData* GetData(FCoord Coord);
-	TArray<FMovement> GetMovements(ChessBoxData& Data);
+	ChessBoxData* GetData(FCoord Coord) const;
+	FMovementResultArray GetMovementsFromData(ChessBoxData& Data);
 	int IsValidMovement(FCoord Coord);
+
+	FCoord GetRandomPieceCoord(ETeam Team) const;
 
 private:
 	ChessBoxData* Board[8][8];
 	class UValidation* Validation;
+	TArray<FString> MovementStringArray;
+
 };

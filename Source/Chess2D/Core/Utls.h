@@ -27,4 +27,17 @@ namespace ChessUtls
 		Name.AppendChar(ROW[Coord.Y]);
 		return Name;
 	}
+
+	static FString GetPieceCharName(EPieceType Piece, int LANG = 0)
+	{
+		switch (Piece)
+		{
+			case EMPTY: case PAWN: default: return "";
+			case BISHOP: return "B";
+			case KING: return "K";
+			case KNIGHT: return "N";
+			case QUEEN: return "Q";
+			case ROOK: return "R";
+		}
+	}
 }

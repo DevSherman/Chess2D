@@ -12,8 +12,8 @@ class CHESS2D_API UValidation : public UObject
 
 public:
 	void Init(class UChessEngine& _Engine);
-	TArray<FMovement> GetMovements(ChessBoxData& Data);
-	int IsValidMovement(FCoord Coord);
+	FMovementResultArray GetMovements(ChessBoxData& Data);
+	int IsPlayerMoveValid(FCoord Coord);
 	void UpdateKingPos(ETeam Team, FCoord Pos);
 
 private:
@@ -32,12 +32,15 @@ private:
 	void IterateAxis(int IncrementX, int IncrementY);
 
 	TArray<FCoord> OnCheck(ETeam Team);
+	bool HasPieceType(FCoord Coord, EPieceType Piece, ETeam Team);
+	void AddToResult(EMovementType MovType, FCoord Coord);
 
 private:
 	UChessEngine* Engine;
+	EPositionResult CurrentPosition;
 	FMovement LastMove;
 	TArray<FCoord> PossibleMoves;
-	TArray<FMovement> Result;
+	FMovementResultArray Result;
 	ChessBoxData* CurrentData;
 	ETeam CurrentTeam;
 	int X, Y;

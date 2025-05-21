@@ -3,17 +3,23 @@
 
 void UValidation::Init(UChessEngine& _Engine)
 {
-	Engine = &_Engine;
+	Engine = &_Engine;	
+	CurrentPosition = EPositionResult::DEFAULT;
 }
 
-TArray<FMovement> UValidation::GetMovements(ChessBoxData& Data)
+FMovementResultArray UValidation::GetMovements(ChessBoxData& Data)
 {
+	Result = FMovementResultArray();
+
+	Result.Piece = Data.PieceType;
+	Result.CurrentCoord = Data.Coord;
+	Result.Team = Data.Team;
+
 	CurrentData = &Data;
 	CurrentTeam = CurrentData->Team;
 	X = CurrentData->Coord.X;
 	Y = CurrentData->Coord.Y;
 	PossibleMoves.Empty();
-	Result.Empty();
 
 	switch (CurrentData->PieceType)
 	{
@@ -26,16 +32,33 @@ TArray<FMovement> UValidation::GetMovements(ChessBoxData& Data)
 		case ROOK: GetRookMovements(); break;
 		default: break;
 	}
+	
+	if (OnCheck(CurrentTeam).Num() > 0)
+	{
+		//if (CurrentTeam == ETeam::WHITE) CurrentPosition = EPositionResult::WHITE_ONCHECK;
+		//if (CurrentTeam == ETeam::BLACK) CurrentPosition = EPositionResult::BLACK_ONCHECK;
+
+		UE_LOG(LogTemp, Warning, TEXT("OnCheck"));
+	}
+
+	Result.bIsValid = Result.Movements.Num() > 0 ? true : false;
+
+	/*if (!Result.bIsValid)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UValidation::GetMovements] Can't find any movement from the piece [xxx]."));
+	}
+	else UE_LOG(LogTemp, Warning, TEXT("[UValidation::GetMovements] The piece can move to: %i position/s"), Result.Movements.Num());*/
+
 	return Result;
 }
 
-int UValidation::IsValidMovement(FCoord Coord)
+int UValidation::IsPlayerMoveValid(FCoord Coord)
 {
-	for (size_t i = 0; i < Result.Num(); i++)
+	for (size_t i = 0; i < Result.Movements.Num(); i++)
 	{
-		if (Result[i].Coord == Coord)
+		if (Result.Movements[i].Coord == Coord)
 		{
-			LastMove = Result[i];
+			LastMove = Result.Movements[i];
 			return i;
 		}
 	}
@@ -55,10 +78,8 @@ void UValidation::CheckMoves()
 		ChessBoxData* MoveData = Engine->GetData(PossibleMoves[i]);
 		if (MoveData)
 		{
-			if (MoveData->PieceType == EPieceType::EMPTY) 
-				Result.Add({ EMovementType::MOVE, PossibleMoves[i], CurrentTeam });
-			else if(MoveData->Team != CurrentTeam)
-				Result.Add({ EMovementType::CAPTURE, PossibleMoves[i], CurrentTeam });
+			if (MoveData->PieceType == EPieceType::EMPTY) AddToResult(EMovementType::MOVE, PossibleMoves[i]);
+			else if(MoveData->Team != CurrentTeam) AddToResult(EMovementType::CAPTURE, PossibleMoves[i]);
 		}
 	}
 }
@@ -105,7 +126,7 @@ void UValidation::GetKingMovements()
 					&& GetData({ 2, 0 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 3, 0 })->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ EMovementType::CASTLING, {2, 0}, CurrentTeam });
+					AddToResult(EMovementType::CASTLING, {2, 0});
 				}
 			}
 			ChessBoxData* RIGHT_ROOK = GetData({ 7, 0 });
@@ -114,7 +135,7 @@ void UValidation::GetKingMovements()
 				if (GetData({ 5, 0 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 6, 0 })->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ EMovementType::CASTLING, {6, 0}, CurrentTeam });
+					AddToResult(EMovementType::CASTLING, {6, 0});
 				}
 			}
 		}
@@ -132,7 +153,7 @@ void UValidation::GetKingMovements()
 					&& GetData({ 2, 7 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 3, 7})->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ EMovementType::CASTLING, {2, 7}, CurrentTeam });
+					AddToResult(EMovementType::CASTLING, {2, 7});
 				}
 			}
 			ChessBoxData* RIGHT_ROOK = GetData({ 7, 7 });
@@ -141,7 +162,7 @@ void UValidation::GetKingMovements()
 				if (GetData({ 5, 7 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 6, 7 })->PieceType == EPieceType::EMPTY)
 				{
-					Result.Add({ EMovementType::CASTLING, {6, 7}, CurrentTeam });
+					AddToResult(EMovementType::CASTLING, {6, 7});
 				}
 			}
 		}
@@ -183,10 +204,10 @@ void UValidation::GetPawnMovements()
 		RightCapture = GetData({ X + 1, Y - 1 });
 	}
 
-	if(Forward1 && Forward1->Team == ETeam::NONE) Result.Add({ EMovementType::MOVE, Forward1->Coord, Forward1->Team });
-	if (Forward2 && Forward2->Team == ETeam::NONE) Result.Add({ EMovementType::MOVE, Forward2->Coord, Forward2->Team });
-	if (LeftCapture && LeftCapture->Team != CurrentTeam && LeftCapture->Team != ETeam::NONE) Result.Add({ EMovementType::CAPTURE, LeftCapture->Coord, CurrentTeam });
-	if (RightCapture && RightCapture->Team != CurrentTeam && RightCapture->Team != ETeam::NONE) Result.Add({ EMovementType::CAPTURE, RightCapture->Coord, CurrentTeam });
+	if(Forward1 && Forward1->Team == ETeam::NONE) AddToResult(EMovementType::MOVE, Forward1->Coord);
+	if (Forward2 && Forward2->Team == ETeam::NONE) AddToResult(EMovementType::MOVE, Forward2->Coord);
+	if (LeftCapture && LeftCapture->Team != CurrentTeam && LeftCapture->Team != ETeam::NONE) AddToResult(EMovementType::CAPTURE, LeftCapture->Coord);
+	if (RightCapture && RightCapture->Team != CurrentTeam && RightCapture->Team != ETeam::NONE) AddToResult(EMovementType::CAPTURE, RightCapture->Coord);
 	//TODO: passant
 	//CheckMoves();
 }
@@ -229,70 +250,104 @@ TArray<FCoord> UValidation::OnCheck(ETeam Team)
 	TArray<FCoord> Coords;
 	ChessBoxData* Data;
 
-	if (Team == ETeam::WHITE)
+	FCoord KING_POS = (Team == ETeam::WHITE) ? W_KING_POS : B_KING_POS;
+
+
+
+	//Queen & bishop positions
+	int i = 1;
+	while (true)
 	{
-		int i = 1;
-		while (true)
-		{
-			FCoord Coord = { W_KING_POS.X + i, W_KING_POS.Y + i };
-			Data = GetData({ Coord });
-			if (!Data) break;
+		FCoord Coord = { KING_POS.X + i, KING_POS.Y + i };
+		Data = GetData({ Coord });
+		if (!Data) break;
 
-			if (Data->Team == Team) break;
-			else if (Data->Team != Team && Data->Team != ETeam::NONE)
-			{
-				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
-				break;
-			}
-			i++;
-		}
-		i = 1;
-		while (true)
+		if (Data->Team == Team) break;
+		else if (Data->Team != Team && Data->Team != ETeam::NONE)
 		{
-			FCoord Coord = { W_KING_POS.X - i, W_KING_POS.Y - i };
-			Data = GetData({ Coord });
-			if (!Data) break;
-
-			if (Data->Team == Team) break;
-			else if (Data->Team != Team && Data->Team != ETeam::NONE)
-			{
-				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
-				break;
-			}
-			i++;
+			if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+			break;
 		}
-		i = 1;
-		while (true)
-		{
-			FCoord Coord = { W_KING_POS.X + i, W_KING_POS.Y - i };
-			Data = GetData({ Coord });
-			if (!Data) break;
-
-			if (Data->Team == Team) break;
-			else if (Data->Team != Team)
-			{
-				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
-				break;
-			}
-			i++;
-		}
-		i = 1;
-		while (true)
-		{
-			FCoord Coord = { W_KING_POS.X - i, W_KING_POS.Y + i };
-			Data = GetData({ Coord });
-			if (!Data) break;
-
-			if (Data->Team == CurrentTeam) break;
-			else if ((Data->Team != CurrentTeam))
-			{
-				if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
-				break;
-			}
-			i++;
-		}
+		i++;
 	}
+	i = 1;
+	while (true)
+	{
+		FCoord Coord = { KING_POS.X - i, KING_POS.Y - i };
+		Data = GetData({ Coord });
+		if (!Data) break;
+
+		if (Data->Team == Team) break;
+		else if (Data->Team != Team && Data->Team != ETeam::NONE)
+		{
+			if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+			break;
+		}
+		i++;
+	}
+	i = 1;
+	while (true)
+	{
+		FCoord Coord = { KING_POS.X + i, KING_POS.Y - i };
+		Data = GetData({ Coord });
+		if (!Data) break;
+
+		if (Data->Team == Team) break;
+		else if (Data->Team != Team)
+		{
+			if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+			break;
+		}
+		i++;
+	}
+	i = 1;
+	while (true)
+	{
+		FCoord Coord = { KING_POS.X - i, KING_POS.Y + i };
+		Data = GetData({ Coord });
+		if (!Data) break;
+
+		if (Data->Team == CurrentTeam) break;
+		else if ((Data->Team != CurrentTeam))
+		{
+			if (Data->PieceType == EPieceType::BISHOP || Data->PieceType == EPieceType::QUEEN) Coords.Add(Coord);
+			break;
+		}
+		i++;
+	}
+	//knight positions
+	TArray<FCoord> Knights_Pos = 
+	{
+		{ KING_POS.X + 1, KING_POS.Y + 2 },
+		{ KING_POS.X - 1, KING_POS.Y + 2 },
+
+		{ KING_POS.X + 1, KING_POS.Y - 2 },
+		{ KING_POS.X - 1, KING_POS.Y - 2 },
+
+		{ KING_POS.X + 2, KING_POS.Y + 1 },
+		{ KING_POS.X + 2, KING_POS.Y - 1 },
+
+		{ KING_POS.X - 2, KING_POS.Y + 1 },
+		{ KING_POS.X - 2, KING_POS.Y - 1 }
+	};
+
+	ETeam OpenentTeam = (Team == ETeam::WHITE) ? ETeam::BLACK : ETeam::WHITE;
+
+	for (int k = 0; k < Knights_Pos.Num() - 1; k++)
+		if (HasPieceType(Knights_Pos[k], EPieceType::KNIGHT, OpenentTeam)) Coords.Add(Knights_Pos[k]);
 
 	return Coords;
+}
+
+bool UValidation::HasPieceType(FCoord Coord, EPieceType Piece, ETeam Team)
+{
+	ChessBoxData* Data = GetData(Coord);
+	if (Data && Data->Team == Team && Data->PieceType == Piece) return true;
+	return false;
+}
+
+void UValidation::AddToResult(EMovementType MovType, FCoord Coord)
+{
+	Result.Movements.Add({ MovType , Coord });
 }
 

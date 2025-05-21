@@ -50,11 +50,31 @@ enum EMovementType
 	CASTLING
 };
 
+enum EPositionResult
+{
+	DEFAULT,
+	WHITE_ONCHECK,
+	BLACK_ONCHECK,
+	WHITE_ONCHECKMATE,
+	BLACK_ONCHECKMATE,
+	DRAW50,
+	DRAW
+};
+
 struct FMovement
 {
-	EMovementType Type;
-	FCoord Coord;
+	EMovementType Type = EMovementType::MOVE;
+	FCoord Coord{ -1, -1 };
+};
+
+struct FMovementResultArray
+{
+	FCoord CurrentCoord{ -1, -1 };
 	ETeam Team;
+	EPieceType Piece;
+	TArray<FMovement> Movements;
+	FMovement FinalMov;
+	bool bIsValid = false;
 };
 
 enum EInfoType

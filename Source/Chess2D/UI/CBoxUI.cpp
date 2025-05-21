@@ -38,14 +38,23 @@ void UCBoxUI::ShowSelection(bool bValue)
 
 void UCBoxUI::SetPieceTexture(UTexture2D* Texture)
 {
+	if(!Texture) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("[UCBoxUI::SetPieceTexture] Null asset"));
+		return;
+	}
+
 	PieceImage->SetBrushFromTexture(Texture);
 	PieceImage->SetOpacity(1);
 }
 
 void UCBoxUI::Clear()
 {
-	PieceImage->SetBrushFromSoftTexture(nullptr);
-	PieceImage->SetOpacity(0);
+	if (PieceImage->Brush.HasUObject())
+	{
+		//PieceImage->SetBrushFromSoftTexture(nullptr);
+		PieceImage->SetOpacity(0);
+	}
 }
 
 void UCBoxUI::SetFrameInfo(EInfoType Type)
