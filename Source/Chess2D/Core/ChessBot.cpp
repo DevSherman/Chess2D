@@ -21,7 +21,8 @@ FMovementResultArray UChessBot::GetRandomMove()
 	if (!result.bIsValid) GetRandomMove();
 	else
 	{
-		FMovement mov = result.Movements[rand() % result.Movements.Num()];
+		int finalMoveIndex = rand() % result.Movements.Num();
+		FMovement mov = result.Movements[finalMoveIndex];
 		ChessBoxData* Target = Engine->GetData(mov.Coord);
 
 		if (Target)
@@ -29,7 +30,7 @@ FMovementResultArray UChessBot::GetRandomMove()
 			Target->Update(result.Piece, result.Team);
 			Engine->ClearBoard(result.CurrentCoord);
 
-			result.FinalMov = mov;
+			result.FinalMoveIndex = finalMoveIndex;
 			return result;
 		}
 		else

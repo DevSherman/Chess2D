@@ -19,12 +19,12 @@ public:
 	ChessBoxData* GetData(FCoord Coord) const;
 	FMovementResultArray GetMovementsFromData(ChessBoxData& Data);
 	int IsValidMovement(FCoord Coord);
-
+	FString GetNotation(FMovementResultArray Result);
 	FCoord GetRandomPieceCoord(ETeam Team) const;
 
 private:
 	ChessBoxData* Board[8][8];
 	class UValidation* Validation;
-	TArray<FString> MovementStringArray;
+	FString MovementRegistry;
 
 };

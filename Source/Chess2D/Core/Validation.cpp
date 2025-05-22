@@ -126,7 +126,7 @@ void UValidation::GetKingMovements()
 					&& GetData({ 2, 0 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 3, 0 })->PieceType == EPieceType::EMPTY)
 				{
-					AddToResult(EMovementType::CASTLING, {2, 0});
+					AddToResult(EMovementType::L_CASTLING, {2, 0});
 				}
 			}
 			ChessBoxData* RIGHT_ROOK = GetData({ 7, 0 });
@@ -135,7 +135,7 @@ void UValidation::GetKingMovements()
 				if (GetData({ 5, 0 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 6, 0 })->PieceType == EPieceType::EMPTY)
 				{
-					AddToResult(EMovementType::CASTLING, {6, 0});
+					AddToResult(EMovementType::S_CASTLING, {6, 0});
 				}
 			}
 		}
@@ -153,7 +153,7 @@ void UValidation::GetKingMovements()
 					&& GetData({ 2, 7 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 3, 7})->PieceType == EPieceType::EMPTY)
 				{
-					AddToResult(EMovementType::CASTLING, {2, 7});
+					AddToResult(EMovementType::L_CASTLING, {2, 7});
 				}
 			}
 			ChessBoxData* RIGHT_ROOK = GetData({ 7, 7 });
@@ -162,7 +162,7 @@ void UValidation::GetKingMovements()
 				if (GetData({ 5, 7 })->PieceType == EPieceType::EMPTY
 					&& GetData({ 6, 7 })->PieceType == EPieceType::EMPTY)
 				{
-					AddToResult(EMovementType::CASTLING, {6, 7});
+					AddToResult(EMovementType::S_CASTLING, {6, 7});
 				}
 			}
 		}
@@ -204,8 +204,11 @@ void UValidation::GetPawnMovements()
 		RightCapture = GetData({ X + 1, Y - 1 });
 	}
 
-	if(Forward1 && Forward1->Team == ETeam::NONE) AddToResult(EMovementType::MOVE, Forward1->Coord);
-	if (Forward2 && Forward2->Team == ETeam::NONE) AddToResult(EMovementType::MOVE, Forward2->Coord);
+	if (Forward1 && Forward1->Team == ETeam::NONE)
+	{
+		AddToResult(EMovementType::MOVE, Forward1->Coord);
+		if (Forward2 && Forward2->Team == ETeam::NONE) AddToResult(EMovementType::MOVE, Forward2->Coord);
+	}
 	if (LeftCapture && LeftCapture->Team != CurrentTeam && LeftCapture->Team != ETeam::NONE) AddToResult(EMovementType::CAPTURE, LeftCapture->Coord);
 	if (RightCapture && RightCapture->Team != CurrentTeam && RightCapture->Team != ETeam::NONE) AddToResult(EMovementType::CAPTURE, RightCapture->Coord);
 	//TODO: passant

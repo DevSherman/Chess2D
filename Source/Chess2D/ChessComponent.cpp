@@ -92,22 +92,13 @@ void UChessComponent::UpdateCBoxUI(int X, int Y, EPieceType Piece, ETeam Team)
 void UChessComponent::ClearCBoxUI(int X, int Y)
 {
 	CBoxUIArray[X][Y]->Clear();
-	UE_LOG(LogTemp, Warning, TEXT("[UChessComponent::ClearCBoxUI] : [%s] Cleared"), *ChessUtls::GetCoordName(FCoord{ X, Y }));
+	//UE_LOG(LogTemp, Warning, TEXT("[UChessComponent::ClearCBoxUI] : [%s] Cleared"), *ChessUtls::GetCoordName(FCoord{ X, Y }));
 }
 
 void UChessComponent::ShowInfoPositions(TArray<FMovement> MovesArray)
 {
 	for (int i = 0; i < ValidMovements.Movements.Num(); i++)
-	{
-		EInfoType InfoType;
-		if (ValidMovements.Movements[i].Type == EMovementType::CAPTURE || ValidMovements.Movements[i].Type == EMovementType::PASSANT)
-			InfoType = EInfoType::CAPTURE_TYPE;
-		if (ValidMovements.Movements[i].Type == EMovementType::MOVE || ValidMovements.Movements[i].Type == EMovementType::CASTLING)
-			InfoType = EInfoType::MOVE_TYPE;
-
-		CBoxUIArray[ValidMovements.Movements[i].Coord.X][ValidMovements.Movements[i].Coord.Y]->SetFrameInfo(InfoType);
-	}
-		
+		CBoxUIArray[ValidMovements.Movements[i].Coord.X][ValidMovements.Movements[i].Coord.Y]->SetFrameInfo(GetInfo(ValidMovements.Movements[i].Type));	
 }
 void UChessComponent::ClearInfoPositions()
 {
@@ -138,11 +129,6 @@ void UChessComponent::MoveToCursor()
 	
 	ShowInfoPositions(ValidMovements.Movements);
 	CurrentCBoxUI->Clear();
-
-	//NextTeamTurn();
-
-	//for (int i = 0; i < ValidMovements.Num(); i++)
-		//UE_LOG(LogTemp, Warning, TEXT("ValidMovements: %s"), *ChessUtls::GetCoordName(ValidMovements[i].Coord));
 }
 
 void UChessComponent::OnClickReleased()
@@ -156,35 +142,18 @@ void UChessComponent::OnClickReleased()
 			int Index = Engine->IsValidMovement(CurrentCBoxUI->GetCoord());
 			if (Index > -1)
 			{
-				FMovement Move = ValidMovements.Movements[Index];
+				FMovement move = ValidMovements.Movements[Index];
+				ValidMovements.FinalMoveIndex = Index;
 
-				//TOOD: Check move type
-				switch (Move.Type)
-				{
-					case EMovementType::MOVE:
-					{
-						if(CurrentData->Team == WHITE) PlaySoundEffect(1);
-						if (CurrentData->Team == BLACK) PlaySoundEffect(2);
-						break;
-					}
-					case EMovementType::CAPTURE:
-					{
-						if (CurrentData->Team == WHITE) PlaySoundEffect(5);
-						if (CurrentData->Team == BLACK) PlaySoundEffect(6);
-						break;
-					}
-					case EMovementType::CASTLING:
-					{
-						if (CurrentData->Team == WHITE) PlaySoundEffect(3);
-						if (CurrentData->Team == BLACK) PlaySoundEffect(4);
-						Castling(Move.Coord);
-						break;
-					}
-				}
+				if (move.Type == EMovementType::L_CASTLING || move.Type == EMovementType::S_CASTLING) Castling(move.Coord);
 
 				CurrentCBoxUI->SetPieceTexture(UI->GetImageFromCursor());
 				CurrentData->Coord = CurrentCBoxUI->GetCoord();
 				Engine->UpdateBoard(CurrentData);
+
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *Engine->GetNotation(ValidMovements));
+
+				SoundEffect(move.Type);
 
 				NextTeamTurn();
 				OpenentMove();
@@ -200,18 +169,8 @@ void UChessComponent::OnClickReleased()
 
 void UChessComponent::NextTeamTurn()
 {
-	if (CurrentTeam == ETeam::BLACK)
-	{
-		CurrentTeam = ETeam::WHITE;
-		//UE_LOG(LogTemp, Warning, TEXT("[UChessComponent] Next Turn: (WHITE)."));
-		return;
-	}
-	if (CurrentTeam == ETeam::WHITE)
-	{
-		CurrentTeam = ETeam::BLACK;
-		//UE_LOG(LogTemp, Warning, TEXT("[UChessComponent] Next Turn: (BLACK)."));
-		return;
-	}
+	if (CurrentTeam == ETeam::BLACK) CurrentTeam = ETeam::WHITE;
+	else if(CurrentTeam == ETeam::WHITE) CurrentTeam = ETeam::BLACK;
 }
 
 ETeam UChessComponent::GetOpenentTeam() const
@@ -227,9 +186,13 @@ void UChessComponent::OpenentMove()
 	//if (result.CurrentCoord.X < 0 || result.CurrentCoord.Y < 0) UE_DEBUG_BREAK();
 	if (result.bIsValid)
 	{
-		FMovement mov = result.FinalMov;
-		UpdateCBoxUI(mov.Coord.X, mov.Coord.Y, result.Piece, result.Team);
+		FMovement move = result.Movements[result.FinalMoveIndex];
+		UpdateCBoxUI(move.Coord.X, move.Coord.Y, result.Piece, result.Team);
 		ClearCBoxUI(result.CurrentCoord.X, result.CurrentCoord.Y);
+		CBoxUIArray[move.Coord.X][move.Coord.Y]->SetFrameInfo(GetInfo(move.Type));
+
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *Engine->GetNotation(result));
+
 		NextTeamTurn();
 	}
 	else OpenentMove();
@@ -285,6 +248,44 @@ void UChessComponent::Castling(FCoord Coord)
 
 		CBoxUIArray[7][7]->Clear();
 		Engine->ClearBoard({ 7, 7 });
+	}
+}
+
+EInfoType UChessComponent::GetInfo(EMovementType Type)
+{
+	EInfoType infoType{};
+	if (Type == EMovementType::CAPTURE || Type == EMovementType::PASSANT)
+		infoType = EInfoType::CAPTURE_TYPE;
+	if (Type == EMovementType::MOVE || Type == EMovementType::S_CASTLING || Type == EMovementType::L_CASTLING)
+		infoType = EInfoType::MOVE_TYPE;
+
+	return infoType;
+}
+
+void UChessComponent::SoundEffect(EMovementType Type)
+{
+	//TOOD: Check move type
+	switch (Type)
+	{
+		case EMovementType::MOVE:
+		{
+			if (CurrentData->Team == WHITE) PlaySoundEffect(1);
+			if (CurrentData->Team == BLACK) PlaySoundEffect(2);
+			break;
+		}
+		case EMovementType::CAPTURE:
+		{
+			if (CurrentData->Team == WHITE) PlaySoundEffect(5);
+			if (CurrentData->Team == BLACK) PlaySoundEffect(6);
+			break;
+		}
+		case EMovementType::S_CASTLING: case EMovementType::L_CASTLING:
+		{
+			if (CurrentData->Team == WHITE) PlaySoundEffect(3);
+			if (CurrentData->Team == BLACK) PlaySoundEffect(4);
+
+			break;
+		}
 	}
 }
 

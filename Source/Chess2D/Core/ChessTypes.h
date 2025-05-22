@@ -47,7 +47,8 @@ enum EMovementType
 	MOVE,
 	CAPTURE,
 	PASSANT,
-	CASTLING
+	S_CASTLING,
+	L_CASTLING
 };
 
 enum EPositionResult
@@ -73,7 +74,7 @@ struct FMovementResultArray
 	ETeam Team;
 	EPieceType Piece;
 	TArray<FMovement> Movements;
-	FMovement FinalMov;
+	int FinalMoveIndex = -1;
 	bool bIsValid = false;
 };
 

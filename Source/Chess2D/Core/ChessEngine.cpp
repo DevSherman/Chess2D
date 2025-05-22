@@ -17,10 +17,6 @@ void UChessEngine::UpdateBoard(ChessBoxData* Data, bool bInit)
 {
 	if(!bInit) Data->bMoved = true;
 	Board[Data->Coord.X][Data->Coord.Y] = Data;
-
-	FString MovementName = ChessUtls::GetPieceCharName(Data->PieceType) + ChessUtls::GetCoordName(Data->Coord);
-	UE_LOG(LogTemp, Warning, TEXT("[UChessEngine::UpdateBoard]: %s"), *MovementName);
-
 	if (Data->PieceType == EPieceType::KING) Validation->UpdateKingPos(Data->Team, Data->Coord);
 }
 
@@ -43,6 +39,45 @@ FMovementResultArray UChessEngine::GetMovementsFromData(ChessBoxData& Data)
 int UChessEngine::IsValidMovement(FCoord Coord)
 {
 	return Validation->IsPlayerMoveValid(Coord);
+}
+
+FString UChessEngine::GetNotation(FMovementResultArray Result)
+{
+	FMovement finalMove = Result.Movements[Result.FinalMoveIndex];
+	FString notation = "";
+
+	if (Result.Piece == EPieceType::PAWN)
+	{
+		if (finalMove.Type == EMovementType::MOVE)
+		{
+			notation = ChessUtls::GetCoordName(finalMove.Coord);
+		}
+		else if(finalMove.Type == EMovementType::CAPTURE)
+		{
+			notation += (ChessUtls::GetCoordName(Result.CurrentCoord))[0];
+			notation += 'x';
+			notation += ChessUtls::GetCoordName(finalMove.Coord);
+		}
+	}
+	else
+	{
+		if (finalMove.Type == EMovementType::MOVE)
+		{
+			notation += ChessUtls::GetPieceCharName(Result.Piece);
+			notation += ChessUtls::GetCoordName(finalMove.Coord);
+		}
+		else if (finalMove.Type == EMovementType::CAPTURE)
+		{
+			notation += ChessUtls::GetPieceCharName(Result.Piece);
+			notation += 'x';
+			notation += ChessUtls::GetCoordName(finalMove.Coord);
+		}
+		else if (finalMove.Type == EMovementType::S_CASTLING) notation += "0-0";
+		else if (finalMove.Type == EMovementType::L_CASTLING) notation += "0-0-0";
+	}
+
+	MovementRegistry.Append(notation);
+	return notation;
 }
 
 FCoord UChessEngine::GetRandomPieceCoord(ETeam Team) const

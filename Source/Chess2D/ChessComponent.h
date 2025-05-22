@@ -38,6 +38,8 @@ private:
 	void ResetPos();
 	void Castling(FCoord Coord);
 
+	EInfoType GetInfo(EMovementType Type);
+	void SoundEffect(EMovementType Type);
 	void PlaySoundEffect(int Index);
 
 	//oponent
